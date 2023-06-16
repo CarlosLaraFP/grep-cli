@@ -11,9 +11,10 @@ use std::env;
     instead of String values. We’ve chosen to use std::env::args here for simplicity, because
     OsString values differ per platform and are more complex to work with than String values.
  */
+use std::io;
 
 
-fn main() {
+fn main() -> io::Result<()> {
     /*
         1. The args function returns an iterator of the command line arguments passed.
         2. Call the collect method on an iterator to turn it into a collection.
@@ -24,10 +25,8 @@ fn main() {
      */
     let args: Vec<String> = env::args().collect();
     //dbg!(&args);
-    let args = GrepArgs::new(&args[1], &args[2]);
+    let args = GrepArgs::new(&args)?;
     args.show();
-    match args.find_string_in_file() {
-        Err(error) => println!("{}", error),
-        Ok(_) => {}
-    }
+    let _ = args.find_string_in_file();
+    Ok(())
 }
