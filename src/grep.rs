@@ -22,7 +22,7 @@ impl<'a> GrepArgs<'a> {
         }
     }
 
-    pub fn show(&self) {
+    fn show(&self) {
         println!("Searching for \"{}\" in file \"{}\"...", self.query, self.file_path);
     }
 
@@ -32,6 +32,8 @@ impl<'a> GrepArgs<'a> {
             Time complexity: O(N) in file length due to inevitable traversal.
             Space complexity: O(1) because each line variable is dropped at the end of each iteration.
          */
+        self.show();
+
         let reader = BufReader::new(
             fs::File::open(&self.file_path)?
         );
@@ -56,11 +58,11 @@ mod tests {
 
     #[test]
     fn string_found() -> Result<()> {
-        let args = vec!["".to_string(), "banish".to_string(), "poem.txt".to_string()];
+        let args = vec!["".to_string(), "you".to_string(), "poem.txt".to_string()];
         let count = GrepArgs::new(&args)?
             .find_string_in_file()?;
         Ok(
-            assert_eq!(&count, 1)
+            assert_eq!(count, 4)
         )
     }
 
@@ -82,7 +84,7 @@ mod tests {
         let count = GrepArgs::new(&args)?
             .find_string_in_file()?;
         Ok(
-            assert_eq!(&count, 0)
+            assert_eq!(count, 0)
         )
     }
 }

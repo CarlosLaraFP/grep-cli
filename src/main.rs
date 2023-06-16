@@ -14,7 +14,7 @@ use std::env;
 use std::io;
 
 
-fn main() -> io::Result<()> {
+fn main() -> anyhow::Result<()> {
     /*
         1. The args function returns an iterator of the command line arguments passed.
         2. Call the collect method on an iterator to turn it into a collection.
@@ -26,7 +26,7 @@ fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     //dbg!(&args);
     let args = GrepArgs::new(&args)?;
-    args.show();
-    let _ = args.find_string_in_file();
+    let count = args.find_string_in_file()?;
+    println!("Found in {count} lines.");
     Ok(())
 }
