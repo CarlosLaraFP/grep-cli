@@ -9,9 +9,10 @@ use std::env;
  */
 use std::fs;
 use std::io::{self, BufRead, BufReader};
+use anyhow::*;
 
 
-fn main() -> Result<(), io::Error> {
+fn main() -> anyhow::Result<()> {
     /*
         1. The args function returns an iterator of the command line arguments passed.
         2. Call the collect method on an iterator to turn it into a collection.
@@ -27,28 +28,24 @@ fn main() -> Result<(), io::Error> {
 
     println!("Searching for \"{query}\" in file \"{file_path}\"...");
 
+    find_string_in_file(query.as_str(), file_path.as_str())
+}
+
+fn find_string_in_file(query: &str, file_path: &str) -> anyhow::Result<()> {
     /*
         Time complexity: O(N) in file length due to inevitable traversal.
-        Space complexity: Is it possible to avoid reading the file into a String and simply use pointers to disk?
-            Not sure because this is a disk I/O operation that needs to operate on RAM data?
+        Space complexity: O(1) because each line variable is dropped at the end of each iteration.
      */
-
-    let file = fs::File::open(file_path)?;
-    let reader = BufReader::new(file);
+    let reader = BufReader::new(
+        fs::File::open(file_path)?
+    );
 
     for line_result in reader.lines() {
         let line = &line_result?;
-        if line.contains(query.as_str()) {
+        if line.contains(query) {
             println!("{}", line);
         }
     }
-    
-    // let lines = fs::read_to_string(&file_path)?;
-    // for sentence in lines.split("\n") {
-    //     if sentence.contains(query.as_str()) {
-    //         println!("{sentence}");
-    //     }
-    // }
 
     Ok(())
 }
