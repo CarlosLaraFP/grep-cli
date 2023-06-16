@@ -23,29 +23,43 @@ fn main() -> anyhow::Result<()> {
      */
     let args: Vec<String> = env::args().collect();
     //dbg!(&args);
-    let query = &args[1];
-    let file_path = &args[2];
-
-    println!("Searching for \"{query}\" in file \"{file_path}\"...");
-
-    find_string_in_file(query.as_str(), file_path.as_str())
+    let args = GrepArgs::new(&args);
+    args.show();
+    args.find_string_in_file()
 }
 
-fn find_string_in_file(query: &str, file_path: &str) -> anyhow::Result<()> {
-    /*
-        Time complexity: O(N) in file length due to inevitable traversal.
-        Space complexity: O(1) because each line variable is dropped at the end of each iteration.
-     */
-    let reader = BufReader::new(
-        fs::File::open(file_path)?
-    );
-
-    for line_result in reader.lines() {
-        let line = &line_result?;
-        if line.contains(query) {
-            println!("{}", line);
+struct GrepArgs<'a> {
+    query: &'a String,
+    file_path: &'a String
+}
+impl<'a> GrepArgs<'a> {
+    pub fn new(args: &'a [String]) -> Self {
+        GrepArgs {
+            query: &args[1],
+            file_path: &args[2],
         }
     }
 
-    Ok(())
+    pub fn show(&self) {
+        println!("Searching for \"{}\" in file \"{}\"...", self.query, self.file_path);
+    }
+
+    pub fn find_string_in_file(&self) -> anyhow::Result<()> {
+        /*
+            Time complexity: O(N) in file length due to inevitable traversal.
+            Space complexity: O(1) because each line variable is dropped at the end of each iteration.
+         */
+        let reader = BufReader::new(
+            fs::File::open(self.file_path)?
+        );
+
+        for line_result in reader.lines() {
+            let line = &line_result?;
+            if line.contains(self.query) {
+                println!("{}", line);
+            }
+        }
+
+        Ok(())
+    }
 }
