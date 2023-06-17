@@ -27,7 +27,7 @@ impl GrepArgs {
                             but this is about environment variables, not Unicode, so we’ll leave it for now.
                          */
                             GrepArgs {
-                                query: if case_sensitive { query.to_lowercase() } else { query.to_owned() },
+                                query: if !case_sensitive { query.to_lowercase() } else { query.to_owned() },
                                 file_path: file_path.to_owned(),
                                 case_sensitive
                             }
@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn arguments_provided() -> Result<()> {
-        let args = vec!["".to_string(), "you".to_string(), "poem.txt".to_string()];
+        let args = vec!["".to_string(), "you".to_string(), "poem.txt".to_string(), "false".to_string()];
         Ok(
             assert!(
                 GrepArgs::new(&args).is_ok()
@@ -73,6 +73,16 @@ mod tests {
     #[test]
     fn missing_second_argument() -> Result<()> {
         let args = vec!["".to_string(), "you".to_string()];
+        Ok(
+            assert!(
+                GrepArgs::new(&args).is_err()
+            )
+        )
+    }
+
+    #[test]
+    fn missing_third_argument() -> Result<()> {
+        let args = vec!["".to_string(), "you".to_string(), "poem".to_string()];
         Ok(
             assert!(
                 GrepArgs::new(&args).is_err()

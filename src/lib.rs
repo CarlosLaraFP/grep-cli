@@ -2,7 +2,8 @@ pub mod grep;
 
 use crate::grep::GrepArgs;
 use std::fs;
-use std::io::{self, BufRead, BufReader, Result};
+use std::io::{self, BufRead, BufReader};
+use anyhow::*;
 
 
 pub fn find_string_in_file(args: &GrepArgs) -> Result<Vec<String>> {
@@ -40,17 +41,17 @@ mod tests {
 
     #[test]
     fn string_found_case_sensitive() -> Result<()> {
-        let args = vec!["".to_string(), "you".to_string(), "poem.txt".to_string()];
+        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string(), "true".to_string()];
         let args = GrepArgs::new(&args)?;
         let results = find_string_in_file(&args)?;
         Ok(
-            assert_eq!(results.len(), 4)
+            assert_eq!(results.len(), 1)
         )
     }
 
     #[test]
     fn file_does_not_exist() -> Result<()> {
-        let args = vec!["".to_string(), "banish".to_string(), "missing.txt".to_string()];
+        let args = vec!["".to_string(), "banish".to_string(), "missing.txt".to_string(), "false".to_string()];
         let args = GrepArgs::new(&args)?;
         Ok(
             assert!(
@@ -61,7 +62,7 @@ mod tests {
 
     #[test]
     fn string_not_found() -> Result<()> {
-        let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string()];
+        let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string(), "false".to_string()];
         let args = GrepArgs::new(&args)?;
         let results = find_string_in_file(&args)?;
         Ok(
@@ -71,7 +72,7 @@ mod tests {
 
     #[test]
     fn string_found_case_insensitive() -> Result<()> {
-        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string()];
+        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string(), "false".to_string()];
         let args = GrepArgs::new(&args)?;
         let results = find_string_in_file(&args)?;
         Ok(
