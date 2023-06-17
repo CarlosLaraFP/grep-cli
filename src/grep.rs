@@ -1,4 +1,5 @@
-use std::io::{self, Result, Error, ErrorKind};
+use std::io::{self, Error, ErrorKind};
+use anyhow::*;
 //use std::error::Error;
 /*
     Box<dyn Error> means a function will return a type that implements the Error trait,
@@ -9,21 +10,34 @@ use std::io::{self, Result, Error, ErrorKind};
 
 pub struct GrepArgs {
     pub query: String,
-    pub file_path: String
+    pub file_path: String,
+    pub case_sensitive: bool
 }
 impl GrepArgs {
     pub fn new(args: &Vec<String>) -> Result<GrepArgs> {
         match args.get(1) {
             Some(query) => match args.get(2) {
-                Some(file_path) => Ok(
-                    GrepArgs {
-                        query: query.to_lowercase(),
-                        file_path: file_path.to_owned()
-                    }
-                ),
-                _ => Err(Error::new(ErrorKind::NotFound, "Please provide the file to be searched as the second argument."))
+                Some(file_path) => match args.get(3) {
+                    Some(case_sensitive) => {
+                        let case_sensitive = case_sensitive.parse::<bool>()?;
+                        Ok(
+                            /*
+                            While to_lowercase will handle basic Unicode, it won’t be 100% accurate.
+                            If we were writing a real application, we’d want to do a bit more work here,
+                            but this is about environment variables, not Unicode, so we’ll leave it for now.
+                         */
+                            GrepArgs {
+                                query: if case_sensitive { query.to_lowercase() } else { query.to_owned() },
+                                file_path: file_path.to_owned(),
+                                case_sensitive
+                            }
+                        )
+                    },
+                    _ => Err(anyhow!("For the third argument, provide \"true\" for case sensitive search. Otherwise, provide \"false\"."))
+                },
+                _ => Err(anyhow!("Please provide the file to be searched as the second argument."))
             },
-            _ => Err(Error::new(ErrorKind::NotFound, "Please provide the string you are looking for as the first argument."))
+            _ => Err(anyhow!("Please provide the text you are looking for as the first argument."))
         }
     }
 

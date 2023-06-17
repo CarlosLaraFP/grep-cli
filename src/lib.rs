@@ -19,7 +19,13 @@ pub fn find_string_in_file(args: &GrepArgs) -> Result<Vec<String>> {
 
     for line_result in reader.lines() {
         // The compiler does not allow returning references to temporary variables
-        let line = line_result?.to_lowercase(); // moved into line, not cloned
+        let line_result = line_result?;
+        // new String bound to line
+        let line = if !&args.case_sensitive {
+            line_result.to_lowercase()
+        } else {
+            line_result
+        };
         if line.contains(&args.query) {
             results.push(line); // line moved into vector, who now owns it
         }
