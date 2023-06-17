@@ -1,9 +1,6 @@
 // cargo run -- searchstring example-filename.txt
-mod grep;
-
-use grep::*;
-//use anyhow::*;
 use std::env;
+use grep_cli::grep::GrepArgs;
 /*
     Note that std::env::args will panic if any argument contains invalid Unicode.
     If your program needs to accept arguments containing invalid Unicode,
@@ -11,8 +8,15 @@ use std::env;
     instead of String values. We’ve chosen to use std::env::args here for simplicity, because
     OsString values differ per platform and are more complex to work with than String values.
  */
-use std::io;
-
+/*
+    use std::process;
+    let config = Config::build(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {err}");
+        process::exit(1);
+    });
+    If the value is an Err value, this method calls the code in the closure,
+    which is an anonymous function we define and pass as an argument to unwrap_or_else.
+ */
 
 fn main() -> anyhow::Result<()> {
     /*
@@ -26,7 +30,7 @@ fn main() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().collect();
     //dbg!(&args);
     let args = GrepArgs::new(&args)?;
-    let count = args.find_string_in_file()?;
+    let count = grep_cli::find_string_in_file(&args)?;
     println!("Found in {count} lines.");
     Ok(())
 }

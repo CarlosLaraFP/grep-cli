@@ -1,10 +1,15 @@
-use std::fs;
-use std::io::{self, BufRead, BufReader, Error, ErrorKind, Result};
-
+use std::io::{self, Result, Error, ErrorKind};
+//use std::error::Error;
+/*
+    Box<dyn Error> means a function will return a type that implements the Error trait,
+    but we don’t have to specify what particular type the return value will be.
+    This gives us flexibility to return error values that may be of different
+    types in different error cases. The dyn keyword is short for “dynamic.”
+ */
 
 pub struct GrepArgs<'a> {
-    query: &'a str,
-    file_path: &'a str
+    pub query: &'a str,
+    pub file_path: &'a str
 }
 impl<'a> GrepArgs<'a> {
     pub fn new(args: &'a [String]) -> Result<GrepArgs> {
@@ -16,39 +21,14 @@ impl<'a> GrepArgs<'a> {
                         file_path
                     }
                 ),
-                _ => Err(Error::new(ErrorKind::NotFound,"Please provide the file to be searched as the second argument."))
+                _ => Err(Error::new(ErrorKind::NotFound, "Please provide the file to be searched as the second argument."))
             },
             _ => Err(Error::new(ErrorKind::NotFound, "Please provide the string you are looking for as the first argument."))
         }
     }
 
-    fn show(&self) {
+    pub fn show(&self) {
         println!("Searching for \"{}\" in file \"{}\"...", self.query, self.file_path);
-    }
-
-    pub fn find_string_in_file(&self) -> Result<u32> {
-        /*
-            Returns the number of lines where the string is found while printing them.
-            Time complexity: O(N) in file length due to inevitable traversal.
-            Space complexity: O(1) because each line variable is dropped at the end of each iteration.
-         */
-        self.show();
-
-        let reader = BufReader::new(
-            fs::File::open(&self.file_path)?
-        );
-
-        let mut counter: u32 = 0;
-
-        for line_result in reader.lines() {
-            let line = &line_result?;
-            if line.contains(&self.query) {
-                counter += 1;
-                println!("{}", line);
-            }
-        }
-
-        Ok(counter)
     }
 }
 
@@ -57,34 +37,32 @@ mod tests {
     use super::*;
 
     #[test]
-    fn string_found() -> Result<()> {
+    fn arguments_provided() -> Result<()> {
         let args = vec!["".to_string(), "you".to_string(), "poem.txt".to_string()];
-        let count = GrepArgs::new(&args)?
-            .find_string_in_file()?;
-        Ok(
-            assert_eq!(count, 4)
-        )
-    }
-
-    #[test]
-    fn file_does_not_exist() -> Result<()> {
-        let args = vec!["".to_string(), "banish".to_string(), "missing.txt".to_string()];
         Ok(
             assert!(
-                GrepArgs::new(&args)?
-                    .find_string_in_file()
-                    .is_err()
+                GrepArgs::new(&args).is_ok()
             )
         )
     }
 
     #[test]
-    fn string_not_found() -> Result<()> {
-        let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string()];
-        let count = GrepArgs::new(&args)?
-            .find_string_in_file()?;
+    fn missing_first_argument() -> Result<()> {
+        let args = vec!["".to_string()];
         Ok(
-            assert_eq!(count, 0)
+            assert!(
+                GrepArgs::new(&args).is_err()
+            )
+        )
+    }
+
+    #[test]
+    fn missing_second_argument() -> Result<()> {
+        let args = vec!["".to_string(), "you".to_string()];
+        Ok(
+            assert!(
+                GrepArgs::new(&args).is_err()
+            )
         )
     }
 }
