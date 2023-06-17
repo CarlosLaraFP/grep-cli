@@ -15,16 +15,17 @@ pub fn find_string_in_file(args: &GrepArgs) -> Result<Vec<String>> {
         fs::File::open(&args.file_path)?
     );
 
-    let mut vector = Vec::new();
+    let mut results = Vec::new();
 
     for line_result in reader.lines() {
-        let line = line_result?; // moved into line, not cloned
+        // The compiler does not allow returning references to temporary variables
+        let line = line_result?.to_lowercase(); // moved into line, not cloned
         if line.contains(&args.query) {
-            vector.push(line); // line moved into vector, who now owns it
+            results.push(line); // line moved into vector, who now owns it
         }
     }
 
-    Ok(vector)
+    Ok(results)
 }
 
 #[cfg(test)]
@@ -32,12 +33,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn string_found() -> Result<()> {
+    fn string_found_case_sensitive() -> Result<()> {
         let args = vec!["".to_string(), "you".to_string(), "poem.txt".to_string()];
         let args = GrepArgs::new(&args)?;
-        let vector = find_string_in_file(&args)?;
+        let results = find_string_in_file(&args)?;
         Ok(
-            assert_eq!(vector.len(), 4)
+            assert_eq!(results.len(), 4)
         )
     }
 
@@ -56,9 +57,19 @@ mod tests {
     fn string_not_found() -> Result<()> {
         let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string()];
         let args = GrepArgs::new(&args)?;
-        let vector = find_string_in_file(&args)?;
+        let results = find_string_in_file(&args)?;
         Ok(
-            assert_eq!(vector.len(), 0)
+            assert_eq!(results.len(), 0)
+        )
+    }
+
+    #[test]
+    fn string_found_case_insensitive() -> Result<()> {
+        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string()];
+        let args = GrepArgs::new(&args)?;
+        let results = find_string_in_file(&args)?;
+        Ok(
+            assert_eq!(results.len(), 2)
         )
     }
 }

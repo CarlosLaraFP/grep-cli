@@ -7,18 +7,18 @@ use std::io::{self, Result, Error, ErrorKind};
     types in different error cases. The dyn keyword is short for “dynamic.”
  */
 
-pub struct GrepArgs<'a> {
-    pub query: &'a str,
-    pub file_path: &'a str
+pub struct GrepArgs {
+    pub query: String,
+    pub file_path: String
 }
-impl<'a> GrepArgs<'a> {
-    pub fn new(args: &'a [String]) -> Result<GrepArgs> {
+impl GrepArgs {
+    pub fn new(args: &Vec<String>) -> Result<GrepArgs> {
         match args.get(1) {
             Some(query) => match args.get(2) {
                 Some(file_path) => Ok(
                     GrepArgs {
-                        query,
-                        file_path
+                        query: query.to_lowercase(),
+                        file_path: file_path.to_owned()
                     }
                 ),
                 _ => Err(Error::new(ErrorKind::NotFound, "Please provide the file to be searched as the second argument."))
