@@ -5,29 +5,26 @@ use std::fs;
 use std::io::{self, BufRead, BufReader, Result};
 
 
-pub fn find_string_in_file(args: &GrepArgs) -> Result<u32> {
+pub fn find_string_in_file(args: &GrepArgs) -> Result<Vec<String>> {
     /*
-        Returns the number of lines where the string is found while printing them.
+        Returns a vector of owned String instances (size = # of lines found).
         Time complexity: O(N) in file length due to inevitable traversal.
         Space complexity: O(1) because each line variable is dropped at the end of each iteration.
      */
-    args.show();
-
     let reader = BufReader::new(
         fs::File::open(&args.file_path)?
     );
 
-    let mut counter: u32 = 0;
+    let mut vector = Vec::new();
 
     for line_result in reader.lines() {
-        let line = &line_result?;
+        let line = line_result?; // moved into line, not cloned
         if line.contains(&args.query) {
-            counter += 1;
-            println!("{}", line);
+            vector.push(line); // line moved into vector, who now owns it
         }
     }
 
-    Ok(counter)
+    Ok(vector)
 }
 
 #[cfg(test)]
@@ -38,9 +35,9 @@ mod tests {
     fn string_found() -> Result<()> {
         let args = vec!["".to_string(), "you".to_string(), "poem.txt".to_string()];
         let args = GrepArgs::new(&args)?;
-        let count = find_string_in_file(&args)?;
+        let vector = find_string_in_file(&args)?;
         Ok(
-            assert_eq!(count, 4)
+            assert_eq!(vector.len(), 4)
         )
     }
 
@@ -59,9 +56,9 @@ mod tests {
     fn string_not_found() -> Result<()> {
         let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string()];
         let args = GrepArgs::new(&args)?;
-        let count = find_string_in_file(&args)?;
+        let vector = find_string_in_file(&args)?;
         Ok(
-            assert_eq!(count, 0)
+            assert_eq!(vector.len(), 0)
         )
     }
 }

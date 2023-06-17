@@ -30,7 +30,8 @@ fn main() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().collect();
     //dbg!(&args);
     let args = GrepArgs::new(&args)?;
-    let count = grep_cli::find_string_in_file(&args)?;
-    println!("Found in {count} lines.");
+    args.show();
+    let vector = grep_cli::find_string_in_file(&args)?;
+    println!("Found in {} lines.", vector.len());
     Ok(())
 }
