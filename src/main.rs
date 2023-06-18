@@ -29,7 +29,7 @@ fn main() -> anyhow::Result<()> {
      */
     let user_input: Vec<String> = env::args().collect();
     //dbg!(&args);
-    let args = GrepArgs::new(&user_input)?;
+    let args = GrepArgs::build(&user_input)?;
     drop(user_input);
     args.show();
     let vector = grep_cli::find_string_in_file(&args)?;

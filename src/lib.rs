@@ -19,14 +19,13 @@ pub fn find_string_in_file(args: &GrepArgs) -> Result<Vec<String>> {
     let mut results = Vec::new();
 
     for line_result in reader.lines() {
-        // The compiler does not allow returning references to temporary variables
-        let line_result = line_result?;
         // new String bound to line
-        let line = if !&args.case_sensitive {
-            line_result.to_lowercase()
+        let line = if args.ignore_case {
+            line_result?.to_lowercase()
         } else {
-            line_result
+            line_result?
         };
+        // The compiler does not allow returning references to temporary variables
         if line.contains(&args.query) {
             results.push(line); // line moved into vector, who now owns it
         }
@@ -38,11 +37,12 @@ pub fn find_string_in_file(args: &GrepArgs) -> Result<Vec<String>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
 
     #[test]
     fn string_found_case_sensitive() -> Result<()> {
-        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string(), "true".to_string()];
-        let args = GrepArgs::new(&args)?;
+        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string()];
+        let args = GrepArgs::build(&args)?;
         let results = find_string_in_file(&args)?;
         Ok(
             assert_eq!(results.len(), 1)
@@ -51,8 +51,8 @@ mod tests {
 
     #[test]
     fn file_does_not_exist() -> Result<()> {
-        let args = vec!["".to_string(), "banish".to_string(), "missing.txt".to_string(), "false".to_string()];
-        let args = GrepArgs::new(&args)?;
+        let args = vec!["".to_string(), "banish".to_string(), "missing.txt".to_string()];
+        let args = GrepArgs::build(&args)?;
         Ok(
             assert!(
                 find_string_in_file(&args).is_err()
@@ -62,8 +62,8 @@ mod tests {
 
     #[test]
     fn string_not_found() -> Result<()> {
-        let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string(), "false".to_string()];
-        let args = GrepArgs::new(&args)?;
+        let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string()];
+        let args = GrepArgs::build(&args)?;
         let results = find_string_in_file(&args)?;
         Ok(
             assert_eq!(results.len(), 0)
@@ -72,9 +72,11 @@ mod tests {
 
     #[test]
     fn string_found_case_insensitive() -> Result<()> {
-        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string(), "false".to_string()];
-        let args = GrepArgs::new(&args)?;
+        let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string()];
+        env::set_var("IGNORE_CASE", "1");
+        let args = GrepArgs::build(&args)?;
         let results = find_string_in_file(&args)?;
+        env::remove_var("IGNORE_CASE");
         Ok(
             assert_eq!(results.len(), 2)
         )
