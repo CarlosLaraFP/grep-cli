@@ -27,12 +27,14 @@ fn main() -> anyhow::Result<()> {
         rarely need to annotate types in Rust, collect is one function you do often need to
         annotate because Rust isn’t able to infer the kind of collection you want.
      */
-    let user_input: Vec<String> = env::args().collect();
-    //dbg!(&args);
-    let args = GrepArgs::build(&user_input)?;
-    drop(user_input);
+    let args = GrepArgs::build(env::args())?;
     args.show();
+    //dbg!(&args);
     let vector = grep_cli::find_string_in_file(&args)?;
     println!("Found in {} lines.", vector.len());
+    /*
+        eprintln!("Application error: {e}");
+        standard output for successful output and standard error for error output
+     */
     Ok(())
 }

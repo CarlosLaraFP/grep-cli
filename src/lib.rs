@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn string_found_case_sensitive() -> Result<()> {
         let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string()];
-        let args = GrepArgs::build(&args)?;
+        let args = GrepArgs::build(args.into_iter())?;
         let results = find_string_in_file(&args)?;
         Ok(
             assert_eq!(results.len(), 1)
@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn file_does_not_exist() -> Result<()> {
         let args = vec!["".to_string(), "banish".to_string(), "missing.txt".to_string()];
-        let args = GrepArgs::build(&args)?;
+        let args = GrepArgs::build(args.into_iter())?;
         Ok(
             assert!(
                 find_string_in_file(&args).is_err()
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn string_not_found() -> Result<()> {
         let args = vec!["".to_string(), "quantum".to_string(), "poem.txt".to_string()];
-        let args = GrepArgs::build(&args)?;
+        let args = GrepArgs::build(args.into_iter())?;
         let results = find_string_in_file(&args)?;
         Ok(
             assert_eq!(results.len(), 0)
@@ -74,7 +74,7 @@ mod tests {
     fn string_found_case_insensitive() -> Result<()> {
         let args = vec!["".to_string(), "Are".to_string(), "poem.txt".to_string()];
         env::set_var("IGNORE_CASE", "1");
-        let args = GrepArgs::build(&args)?;
+        let args = GrepArgs::build(args.into_iter())?;
         let results = find_string_in_file(&args)?;
         env::remove_var("IGNORE_CASE");
         Ok(
